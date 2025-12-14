@@ -22,7 +22,6 @@ public class FeriasService {
     @Autowired
     private ServidorRepository servidorRepository;
 
-    // Busca todos os períodos de férias de um servidor
     public List<PeriodoFeriasResumoDTO> buscarFeriasPorServidor(Long servidorId) {
         if (!servidorRepository.existsById(servidorId)) {
             throw new RuntimeException("Servidor não encontrado com ID: " + servidorId);
@@ -35,7 +34,6 @@ public class FeriasService {
                 .collect(Collectors.toList());
     }
 
-    // Busca detalhes de um período específico
     public PeriodoFeriasDetalhadoDTO buscarFeriasPorId(Long feriasId) {
         PeriodoFerias periodo = periodoFeriasRepository.findById(feriasId)
                 .orElseThrow(() -> new RuntimeException("Período de férias não encontrado com ID: " + feriasId));
@@ -43,21 +41,21 @@ public class FeriasService {
         return converterParaDetalhadoDTO(periodo);
     }
 
-    // NOVO: Criar solicitação de férias
+
     public PeriodoFeriasDetalhadoDTO criarSolicitacaoFerias(PeriodoFeriasRequestDTO request) {
-        // Busca o servidor
+   
         Servidor servidor = servidorRepository.findById(request.getServidorId())
                 .orElseThrow(() -> new RuntimeException("Servidor não encontrado com ID: " + request.getServidorId()));
 
-        // Valida as datas
+
         if (request.getDataFim().isBefore(request.getDataInicio())) {
             throw new RuntimeException("Data de fim não pode ser anterior à data de início");
         }
 
-        // Calcula quantidade de dias
+       
         int quantidadeDias = (int) ChronoUnit.DAYS.between(request.getDataInicio(), request.getDataFim()) + 1;
 
-        // Cria o período de férias
+      
         PeriodoFerias periodo = new PeriodoFerias();
         periodo.setServidor(servidor);
         periodo.setDataInicio(request.getDataInicio());
@@ -67,13 +65,12 @@ public class FeriasService {
         periodo.setStatus("PENDENTE");
         periodo.setObservacao(request.getObservacao());
 
-        // Salva no banco
         PeriodoFerias salvo = periodoFeriasRepository.save(periodo);
 
         return converterParaDetalhadoDTO(salvo);
     }
 
-    // Conversores
+
     private PeriodoFeriasResumoDTO converterParaResumoDTO(PeriodoFerias periodo) {
         return new PeriodoFeriasResumoDTO(
                 periodo.getId(),
@@ -96,7 +93,7 @@ public class FeriasService {
         dto.setDataSolicitacao(periodo.getDataSolicitacao());
         dto.setObservacao(periodo.getObservacao());
 
-        // Converter servidor
+   
         Servidor servidor = periodo.getServidor();
         dto.setServidor(new ServidorDTO(
                 servidor.getId(),
@@ -105,7 +102,7 @@ public class FeriasService {
                 servidor.getEmail()
         ));
 
-        // Converter pagamento (se existir)
+
         PagamentoFerias pagamento = periodo.getPagamento();
         if (pagamento != null) {
             dto.setPagamento(new PagamentoFeriasDTO(
