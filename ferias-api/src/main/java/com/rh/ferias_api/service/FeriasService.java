@@ -1,6 +1,7 @@
 package com.rh.ferias_api.service;
 
 import com.rh.ferias_api.dto.*;
+import com.rh.ferias_api.exception.ResourceNotFoundException;
 import com.rh.ferias_api.model.PagamentoFerias;
 import com.rh.ferias_api.model.PeriodoFerias;
 import com.rh.ferias_api.model.Servidor;
@@ -24,7 +25,7 @@ public class FeriasService {
 
     public List<PeriodoFeriasResumoDTO> buscarFeriasPorServidor(Long servidorId) {
         if (!servidorRepository.existsById(servidorId)) {
-            throw new RuntimeException("Servidor não encontrado com ID: " + servidorId);
+            throw new ResourceNotFoundException("Servidor não encontrado com ID: " + servidorId);
         }
 
         List<PeriodoFerias> periodos = periodoFeriasRepository.findByServidorIdOrderByDataInicioDesc(servidorId);
@@ -34,28 +35,27 @@ public class FeriasService {
                 .collect(Collectors.toList());
     }
 
+  
     public PeriodoFeriasDetalhadoDTO buscarFeriasPorId(Long feriasId) {
         PeriodoFerias periodo = periodoFeriasRepository.findById(feriasId)
-                .orElseThrow(() -> new RuntimeException("Período de férias não encontrado com ID: " + feriasId));
+                .orElseThrow(() -> new ResourceNotFoundException("Período de férias não encontrado com ID: " + feriasId));
 
         return converterParaDetalhadoDTO(periodo);
     }
 
 
     public PeriodoFeriasDetalhadoDTO criarSolicitacaoFerias(PeriodoFeriasRequestDTO request) {
-   
+     
         Servidor servidor = servidorRepository.findById(request.getServidorId())
-                .orElseThrow(() -> new RuntimeException("Servidor não encontrado com ID: " + request.getServidorId()));
-
+                .orElseThrow(() -> new ResourceNotFoundException("Servidor não encontrado com ID: " + request.getServidorId()));
 
         if (request.getDataFim().isBefore(request.getDataInicio())) {
             throw new RuntimeException("Data de fim não pode ser anterior à data de início");
         }
 
-       
+
         int quantidadeDias = (int) ChronoUnit.DAYS.between(request.getDataInicio(), request.getDataFim()) + 1;
 
-      
         PeriodoFerias periodo = new PeriodoFerias();
         periodo.setServidor(servidor);
         periodo.setDataInicio(request.getDataInicio());
@@ -70,7 +70,7 @@ public class FeriasService {
         return converterParaDetalhadoDTO(salvo);
     }
 
-
+ 
     private PeriodoFeriasResumoDTO converterParaResumoDTO(PeriodoFerias periodo) {
         return new PeriodoFeriasResumoDTO(
                 periodo.getId(),
@@ -93,7 +93,7 @@ public class FeriasService {
         dto.setDataSolicitacao(periodo.getDataSolicitacao());
         dto.setObservacao(periodo.getObservacao());
 
-   
+      
         Servidor servidor = periodo.getServidor();
         dto.setServidor(new ServidorDTO(
                 servidor.getId(),
