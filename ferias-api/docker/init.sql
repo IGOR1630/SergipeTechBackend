@@ -54,3 +54,5 @@ INSERT INTO pagamento_ferias (periodo_ferias_id, valor_bruto, valor_liquido, dat
 (1, 5500.00, 4800.00, '2024-01-10', 'PAGAMENTO_NORMAL'),
 (2, 5500.00, 4800.00, '2024-06-25', 'PAGAMENTO_NORMAL'),
 (4, 6200.00, 5400.00, '2024-12-15', 'TERCO_CONSTITUCIONAL');
+
+--
